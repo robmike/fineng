@@ -165,10 +165,10 @@ end
 # Test case
 # optionprice, earliest, futures, stock, optionval = pricefuturesoption(0.5, 10, 10, 100, 100, 0.20, 0.02, 0.01, "put", "european") # 5.212
 
-# optionprice, earliest, futures, stock, optionval = pricefuturesoption(0.25, 10, 15, 100, 110, 0.30, 0.02, 0.01, "call", "american")
+# optionprice, earliest, futures, stock, optionval = pricefuturesoption(0.5, 4, 10, 100, 100, 0.20, 0.02, 0.01, "call", "european") # 3.65703
+# optionprice, earliest, futures, stock, optionval = pricefuturesoption(0.5, 4, 10, 100, 100, 0.20, 0.02, 0.01, "put", "american") # 3.15
 
-optionprice, earliest, futures, stock, optionval = pricefuturesoption(0.5, 4, 10, 100, 100, 0.20, 0.02, 0.01, "call", "european") # 3.65703
-optionprice, earliest, futures, stock, optionval = pricefuturesoption(0.5, 4, 10, 100, 100, 0.20, 0.02, 0.01, "put", "american") # 
+optionprice, earliest, futures, stock, optionval = pricefuturesoption(0.25, 10, 15, 100, 110, 0.30, 0.02, 0.01, "call", "american")
 flipud(transpose(stock))
 flipud(transpose(futures))
 flipud(transpose(optionval))
