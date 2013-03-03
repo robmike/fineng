@@ -136,6 +136,7 @@ function pricefuturesoption(duration, nperiods, nperiods_future, init_price, str
             ## println(optionval[nperiods,1])
             ## println(((1-q)*optionval[nperiods+1,1] + q*optionval[nperiods+1,2])*invdiscount)
             ov = ((1-q)*optionval[i+1,j] + q*optionval[i+1,j+1])*invdiscount
+            ov = max(ov, 0)
             fp = futuresprice[i,j]
             if isamerican
                 optionval[i,j] = max(ov, (fp - strike)*call)
