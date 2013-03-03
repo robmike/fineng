@@ -1,6 +1,7 @@
 
 from __future__ import division
 from math import exp, sqrt
+from copy import deepcopy
  
 def calibrate_from_blackscholes(maturity, periods, interest_rate, volatility, dividend_yield):
     """Calibrates binomial model from Black-Scholes parameters. Returns appropriate values in tuple
@@ -159,40 +160,58 @@ def futures(base_price, risk_neutral_q, params, connected_nodes = ()):
  
 def tests():
     """Some tests from example excel spreadsheet."""
-    x = calibrate_from_blackscholes(.5, 10, 0.02, 0.2, 0.01)
-    assert round(x[0], 5) == 1.04574
-    assert round(x[1], 5) == 0.49441
-    assert round(x[2], 5) == 1.00100
+    x = calibrate_from_blackscholes(.25, 15, 0.02, 0.3, 0.01)
+    # assert round(x[0], 5) == 1.04574
+    # assert round(x[1], 5) == 0.49441
+    # assert round(x[2], 5) == 1.00100
  
     y = calibrate_from_blackscholes(.25, 10, 0.11941, 0.23438, 0)
     assert round(y[0], 5) == 1.03775
     assert round(y[1], 5) == 0.53106
     assert round(y[2], 5) == 1.00299
  
-    #big one
-    l = generate_stock_price_lattice(100, y[0], 1/y[0], 10)
-    c = binomial_tree_run(l, y[1], european_call, {'strike': 100, 'rate': y[2]})
-    print_lattice(c[0])
+    # #big one
+    # l = generate_stock_price_lattice(100, y[0], 1/y[0], 10)
+    # c = binomial_tree_run(l, y[1], european_call, {'strike': 100, 'rate': y[2]})
+    # print_lattice(c[0])
  
-    #put test
-    pl = generate_stock_price_lattice(100, 1.07, 1/1.07, 3)
-    pc = binomial_tree_run(pl, 0.557, american_put, {'strike': 100, 'rate': 1.01})
-    print_lattice(pc[0])
-    print_lattice(pc[1])
+    # #put test
+    # pl = generate_stock_price_lattice(100, 1.07, 1/1.07, 3)
+    # pc = binomial_tree_run(pl, 0.557, american_put, {'strike': 100, 'rate': 1.01})
+    # print_lattice(pc[0])
+    # print_lattice(pc[1])
  
     #futures test
-    fl = generate_stock_price_lattice(100, x[0], 1/x[0], 10)
+    fl = generate_stock_price_lattice(100, x[0], 1/x[0], 15)
     fp = binomial_tree_run(fl, x[1], futures, {})
+    print_lattice(fl)
     print_lattice(fp[0])
  
-    #option on futures
-    fo = binomial_tree_run(fp[0], x[1], european_put, {'strike': 100, 'rate': x[2]})
-    print_lattice(fo[0])
+    # #option on futures
+    # fo = binomial_tree_run(fp[0], x[1], european_put, {'strike': 100, 'rate': x[2]})
+    # print_lattice(fo[0])
  
     #example for option on future that matures earlier than said futures
-    fearly = binomial_tree_run(fp[0][0:5], x[1], european_call, {'strike': 100, 'rate': x[2]})
+    fearly = binomial_tree_run(fp[0][0:11], x[1], american_call, {'strike': 110, 'rate': x[2]})
     print_lattice(fearly[0])
+    print("---\n")
+    print_lattice(fearly[1])
+    print("---\n")
+    print([i for i,z in enumerate(fearly[1]) if 1.0 in z])
  
+    pl = generate_stock_price_lattice(100, x[0], 1/x[0], 15)
+    pc = binomial_tree_run(pl, x[1], european_put, {'strike': 100, 'rate': x[2]})
+    cc = binomial_tree_run(pl, x[1], european_call, {'strike': 100, 'rate': x[2]})
+
+    # Since they are european options we only care about final value, not entire lattice
+    chooser_lattice = deepcopy(pc[0][0:11])
+    n = 10
+    chooser_lattice[n] = [max(i,j) for i,j in zip(pc[0][n], cc[0][n])]
+
+    fchooser = binomial_tree_run(chooser_lattice, x[1], european_call, {'strike': 0, 'rate': x[2]})
+    print_lattice(pc[0])
+    print_lattice(cc[0])
+    print_lattice(fchooser[0])
  
 def problem_set():
     pass
