@@ -23,7 +23,44 @@ def generate_stock_price_lattice(initial_price, up_value, down_value, periods):
         lattice.append(current_level)
     return lattice
  
-def print_lattice(lattice):
+def print_lattice(lattice, info = []):
+    """
+    Helper function to print lattice in a nice way."""
+    levels = len(lattice[-1])
+    start_date = len(lattice[0]) - 1
+    dates = levels - start_date # (end_date + 1) == levels
+    outlist = []
+    col_widths = [0] * dates
+    # Group level by level
+    for j in range(levels):
+        level = []
+        for k in range(dates):
+            try:
+                point = "{:.2f}".format(lattice[k][levels - 1 - j])
+                esc_width = 0 # Take care of the color escape sequence
+                if info != [] and info[k][levels - 1 - j] > 0:
+                    point = colored(point, 'red')
+                    esc_width += 9 # len(colored('', 'red')) == 9
+                level.append(point)
+                col_widths[k] = max(col_widths[k], len(point) - esc_width)
+            except IndexError:
+                level.append('')
+        outlist.append(level)
+
+    # Prepare separator
+    separator = "|-".join(['-' * w for w in col_widths])
+    # Prepare format
+    formats = [ ]
+    for k in range(dates):
+        formats.append("%%%ds" % col_widths[k])
+    pattern = "  ".join(formats)
+    print pattern % tuple(str(start_date + time) for time in range(dates))
+    print separator
+    for line in outlist:
+        print pattern % tuple(line)
+
+
+def print_lattice_old(lattice):
     """Helper function to print lattice in a nice way."""
     n = len(lattice)
     outlist = []
