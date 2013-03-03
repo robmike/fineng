@@ -78,7 +78,7 @@ function pricefuturesoption(duration, nperiods, nperiods_future, init_price, str
     end
     isamerican = americaneuro == "american"
 
-    dt = duration/nperiods
+    dt = duration/nperiods_future
     # x = fill(strike, (1,2^nperiods))
     discount = exp(rate*dt)
     invdiscount = exp(-rate*dt)
