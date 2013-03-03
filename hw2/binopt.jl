@@ -143,6 +143,14 @@ function pricefuturesoption(duration, nperiods, nperiods_future, init_price, str
             else
                 optionval[i,j] = ov
             end
+
+            del = abs(ov - (fp-strike)*call)
+            if del < 0.01
+                print("Warning, excval - optval = ")
+                println(del)
+                println("May not be choosing whether to excercise correctly here")
+            end
+
             if optionval[i,j] > ov    # exercised
                 earliest = i-1
             end
