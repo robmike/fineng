@@ -30,12 +30,20 @@ estcorr = [0.0056 -0.0020 0.0037;
 vol = 0.05
 sest = sharpeport(estcorr, estret, riskfreeret)
 estslope = capmslope(sest,estcorr, estret, riskfreeret)
-est = riskfreeret + estslope*vol
+est = riskfreeret + estslope*vol;
 round(100*est, 2)
 
-actslope = capmslope(estcorr, estret, riskfreeret)
-act = riskfreeret + actslope*vol
-round(actret, 2)
+sharpevol = sqrt(transpose(sest)*estcorr*sest);
+w = vol*sest/sharpevol;
+wrf = 1 - sum(w);
+
+trueret = wrf*riskfreeret + transpose(w)*netret;
+println("q2: trueret")
+round(100*trueret, 2)
+
+actslope = capmslope(corr, netret, riskfreeret)
+actret = riskfreeret + actslope*vol
+round(100*actret, 2)
 
 
 
