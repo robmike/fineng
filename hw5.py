@@ -86,15 +86,19 @@ def fforeq(x, rl):
 up = 1.1
 down = 0.9
 q = 0.5
-
-up = 1.25
-down = 0.9
-q = 0.5
-
-
 nperiod = 10
+r0 = 0.05
 
-shortrates = latticeiterate(lambda x: fupdn(x, up, down), [6.0/100], nperiod+1)
+# up = 1.25
+# down = 0.9
+# q = 0.5
+
+shortrates = latticeiterate(lambda x: fupdn(x, up, down), [r0], nperiod+1)
 fwdrates = latticeiterate(lambda x: fforeq(x, shortrates), [1], nperiod+1)
 print_lattice(shortrates)
 print_lattice(fwdrates)
+
+# q1
+print("\n")
+print("%.2f" % (sum(fwdrates[10])*100))
+
