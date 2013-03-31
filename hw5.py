@@ -53,6 +53,7 @@ def print_lattice(lattice, info = []):
     for k in range(dates):
         formats.append("%%%ds" % col_widths[k])
     pattern = "  ".join(formats)
+    print("\n")
     print pattern % tuple(str(start_date + time) for time in range(dates))
     print separator
     for line in outlist:
@@ -74,8 +75,26 @@ def latticeiterate(f, init, depth=None):
 def fupdn(x, up, dn):
     return [dn*y for y in x] + [up*x[-1]]
 
+# takes forward values and short rates zipped
+def fforeq(x, rl):
+    def f(p,r):
+        return (0.5*p)/(1+r)
+    p = x
+    r = rl[len(p) - 1]
+    return [f(wl, rl) + f(wh, rh) for wl,rl,wh,rh in zip([0] + p, [0] + r, p + [0], r + [0])]
+
 up = 1.1
 down = 0.9
 q = 0.5
 
-print_lattice(latticeiterate(lambda x: fupdn(x, up, down), [1], 5))
+up = 1.25
+down = 0.9
+q = 0.5
+
+
+nperiod = 10
+
+shortrates = latticeiterate(lambda x: fupdn(x, up, down), [6.0/100], nperiod+1)
+fwdrates = latticeiterate(lambda x: fforeq(x, shortrates), [1], nperiod+1)
+print_lattice(shortrates)
+print_lattice(fwdrates)
