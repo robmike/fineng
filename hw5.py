@@ -80,7 +80,6 @@ def latticeiterate(f, init, depth=None, reverse=False):
 def fupdn(x, up, dn):
     return [dn*y for y in x] + [up*x[-1]]
 
-# takes forward values and short rates zipped
 def felemprice(x, rl):
     def f(p,r):
         return (0.5*p)/(1+r)    # q assumed 0.5
@@ -137,10 +136,20 @@ print("%.2f" % (100*sum(elemprices[-1])/sum(elemprices[4])))  # this is easier
 # value of bond10lat[4] (backwards induction is the same)
 
 # q3
-
 print("\n")
-print("q2")
+print("q3")
 # not the best way to do this
 zeroshortrates = latticeiterate(lambda x: [0]*(len(x)+1), [0], nperiod + 1)
 futlat = latticeiterate(lambda x: frisknetprice(x, zeroshortrates), bond10lat[4], reverse=True)
-pl(futlat)
+# pl(futlat)
+print("%.2f" % (futlat[0][0]))
+
+# another way using element prices
+zeroelemprices = latticeiterate(lambda x: felemprice(x, zeroshortrates), [1], nperiod+1)
+futprice = sum([x*y for x,y in zip(bond10lat[4], zeroelemprices[4])])
+print("%.2f" % futprice)
+
+# q4
+print("\n")
+print("q4")
+
