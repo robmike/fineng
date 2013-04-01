@@ -153,3 +153,7 @@ print("%.2f" % futprice)
 print("\n")
 print("q4")
 
+strike = 80
+finoptval = [max(0, x - strike) for x in bond10lat[6]]
+calllat = latticeiterate(lambda x: frisknetprice(x, shortrates), finoptval, reverse=True)
+pl(calllat)
