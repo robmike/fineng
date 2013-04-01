@@ -66,13 +66,16 @@ def iterate(f, x):
         yield x
         x = f(x)
 
-def latticeiterate(f, init, depth=None):
+def latticeiterate(f, init, depth=None, reverse=False):
     itr = iterate(f, init)
     if depth:
         itr = it.islice(itr, depth)
     else:
         itr = it.takewhile(lambda x: x, itr)
-    return [x for x in itr]
+    out = [x for x in itr]
+    if reverse:
+        out.reverse()
+    return out
 
 def fupdn(x, up, dn):
     return [dn*y for y in x] + [up*x[-1]]
@@ -89,6 +92,8 @@ def felemprice(x, rl):
 def frisknetprice(x, rl, q=0.5):
     r = rl[len(x) - 2]
     return [(q*wl + (1-q)*wh)/(1+ri) for wl,wh,ri in zip(x[:-1], x[1:], r)]
+
+pl = print_lattice
 
 up = 1.1
 down = 0.9
@@ -112,7 +117,7 @@ print_lattice(elemprices)
 # q1
 print("\n")
 print("q1")
-#print("%.2f" % (sum(elemprices[10])*bondprice)) # 61.62
+print("%.2f" % (sum(elemprices[10])*bondprice)) # 61.62
 
 # q2
 print("\n")
@@ -121,11 +126,21 @@ print("q2")
 bond4lat = latticeiterate(lambda x: frisknetprice(x, shortrates), (4+1)*[bondprice])[::-1]
 bond10lat = latticeiterate(lambda x: frisknetprice(x, shortrates), (nperiod+1)*[bondprice])[::-1]
 # for zero-coupon fwdplat and bond10lat are the same for the periods they overlap
-fwdplat = latticeiterate(lambda x: frisknetprice(x, shortrates), bond10lat[4])[::-1]
-# print_lattice(fwdplat)
+fwdlat = latticeiterate(lambda x: frisknetprice(x, shortrates), bond10lat[4])[::-1]
+# print_lattice(fwdlat)
 # print_lattice(bond4lat)
 # print_lattice(bond10lat)
-# print("%.2f" % (100*fwdplat[0][0]/bond4lat[0][0]))           # this works but
-print("%.2f" % (100*sum(elemprices[-1])/sum(elemprices[4]))) # this is easier
+# print("%.2f" % (100*fwdlat[0][0]/bond4lat[0][0]))           # this works but
+print("%.2f" % (100*sum(elemprices[-1])/sum(elemprices[4])))  # this is easier
+# sum(elemprices[-1]) coincides with risk-neutral expected value of
+# forward at time zero because it is equal to risk-neutral expected
+# value of bond10lat[4] (backwards induction is the same)
 
 # q3
+
+print("\n")
+print("q2")
+# not the best way to do this
+zeroshortrates = latticeiterate(lambda x: [0]*(len(x)+1), [0], nperiod + 1)
+futlat = latticeiterate(lambda x: frisknetprice(x, zeroshortrates), bond10lat[4], reverse=True)
+pl(futlat)
