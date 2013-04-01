@@ -3,6 +3,7 @@ import copy
 from pprint import pprint
 import itertools as it
 import functools as ft
+import numpy as np
 
 import pdb, sys
 
@@ -92,6 +93,9 @@ def frisknetprice(x, rl, q=0.5):
     r = rl[len(x) - 2]
     return [(q*wl + (1-q)*wh)/(1+ri) for wl,wh,ri in zip(x[:-1], x[1:], r)]
 
+def flatten(l):
+    return [item for sublist in l for item in sublist] 
+
 pl = print_lattice
 
 up = 1.1
@@ -157,3 +161,12 @@ strike = 80
 finoptval = [max(0, x - strike) for x in bond10lat[6]]
 calllat = latticeiterate(lambda x: frisknetprice(x, shortrates), finoptval, reverse=True)
 pl(calllat)
+
+# q5
+print("\n")
+print("q5")
+notional = 1e6
+fr = 0.045
+swap = [[(r - fr)*p/(1+r) for r,p in zip(rs,ps)] for rs,ps in zip(shortrates, elemprices)]
+fwdswap = sum(flatten(swap[1:11]))
+print("%.2f" % (notional*fwdswap))
