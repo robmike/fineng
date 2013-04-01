@@ -122,8 +122,10 @@ bond4lat = latticeiterate(lambda x: frisknetprice(x, shortrates), (4+1)*[bondpri
 bond10lat = latticeiterate(lambda x: frisknetprice(x, shortrates), (nperiod+1)*[bondprice])[::-1]
 # for zero-coupon fwdplat and bond10lat are the same for the periods they overlap
 fwdplat = latticeiterate(lambda x: frisknetprice(x, shortrates), bond10lat[4])[::-1]
-print_lattice(fwdplat)
-print_lattice(bond4lat)
-print_lattice(bond10lat)
-print("%.2f" % (100*fwdplat[0][0]/bond4lat[0][0]))
-#print("%.2f" % (bondprices[0][0]/sum(elemprices[4])))
+# print_lattice(fwdplat)
+# print_lattice(bond4lat)
+# print_lattice(bond10lat)
+# print("%.2f" % (100*fwdplat[0][0]/bond4lat[0][0]))           # this works but
+print("%.2f" % (100*sum(elemprices[-1])/sum(elemprices[4]))) # this is easier
+
+# q3
