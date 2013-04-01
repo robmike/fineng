@@ -7,7 +7,6 @@ import numpy as np
 
 import pdb, sys
 
-# debug shit (from stackexchange)
 def info(type, value, tb):
    if hasattr(sys, 'ps1') or not sys.stderr.isatty():
       # we are in interactive mode or we don't have a tty-like
@@ -89,9 +88,15 @@ def felemprice(x, rl):
     return [f(wl, rl) + f(wh, rh) for wl,rl,wh,rh in zip([0] + p, [0] + r, p + [0], r + [0])]
 
 # backwards induction using risk neutral pricing
-def frisknetprice(x, rl, q=0.5):
+def frisknetprice(x, rl, cp=None, q=0.5):
     r = rl[len(x) - 2]
-    return [(q*wl + (1-q)*wh)/(1+ri) for wl,wh,ri in zip(x[:-1], x[1:], r)]
+    if cp:
+        c = cp[len(x) - 2]
+        # pdb.set_trace()
+    else:
+        c = [0]*len(x)
+    out = [((q*wh + (1-q)*wl)/(1+ri) + cc) for wl,wh,cc,ri in zip(x[:-1], x[1:], c, r)]
+    return out
 
 def flatten(l):
     return [item for sublist in l for item in sublist] 
@@ -170,3 +175,43 @@ fr = 0.045
 swap = [[(r - fr)*p/(1+r) for r,p in zip(rs,ps)] for rs,ps in zip(shortrates, elemprices)]
 fwdswap = sum(flatten(swap[1:11]))
 print("%.2f" % (notional*fwdswap))
+
+# q5
+print("\n")
+print("q6")
+
+strike = 0
+
+# coupon lattice for foward starting (t=1) swap
+couponlat = [[(r - fr)/(1+r) for r in rs] for rs in shortrates]
+couponlat[0] = [0]              # no coupon payments until forward start time
+fwdswaplat = latticeiterate(lambda x: frisknetprice(x, shortrates, cp=couponlat), couponlat[-1], reverse=True)
+fwdswap2 = fwdswaplat[0][0]
+assert(fwdswap2 - fwdswap < 0.001) # another method to calculate forward swap
+finoptval = [max(0, x - strike) for x in fwdswaplat[5]]
+swaptionlat = latticeiterate(lambda x: frisknetprice(x, shortrates), finoptval, reverse=True)
+# pl(shortrates)
+# pl(couponlat)
+# pl(fwdswaplat)
+# pl(swaptionlat)
+print("%.2f" % (notional*swaptionlat[0][0]))
+
+
+# ######### swaption example from spreadsheet (works correctly)
+# up = 1.25
+# down = 0.9
+# # q = 0.5 # assumed to be 0.5 in various parts of the code
+# nperiod = 5
+# r0 = 0.06
+# fr = 0.05
+# strike = 0
+
+# shortrates = latticeiterate(lambda x: fupdn(x, up, down), [r0], nperiod+1)
+# couponlat = [[(r - fr)/(1+r) for r in rs] for rs in shortrates]
+# swaplat = latticeiterate(lambda x: frisknetprice(x, shortrates, cp=couponlat), couponlat[-1], reverse=True)
+
+# finoptval = [max(0, x - strike) for x in swaplat[3]]
+# swaption = latticeiterate(lambda x: frisknetprice(x, shortrates), finoptval, reverse=True)
+# pl(shortrates)
+# pl(couponlat)
+# pl(swaplat)
