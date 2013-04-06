@@ -101,6 +101,20 @@ def frisknetprice(x, rl, cp=None, q=0.5):
     out = [((q*wh + (1-q)*wl)/(1+ri) + cc) for wl,wh,cc,ri in zip(x[:-1], x[1:], c, r)]
     return out
 
+# Price defaultable bond
+# Warning: coupons on not calculated correctly
+def fdefaultbond(x, rl, hazrate, recrate=0.0, cp=None, q=0.5):
+    r = rl[len(x) - 2]
+    if cp:
+        c = cp[len(x) - 2]
+        # pdb.set_trace()
+    else:
+        c = [0]*len(x)
+    hr = hazrate[len(x) - 2]
+    out = [((1-hri)*(q*wh + (1-q)*wl)+hri*recrate)/(1+ri) + cc for wl,wh,cc,ri,hri in zip(x[:-1], x[1:], c, r, hr)]
+    return out
+
+
 def flatten(l):
     return [item for sublist in l for item in sublist] 
 
@@ -158,3 +172,23 @@ def q1and2(b):
 print("q1: %.2f" % (notional*q1and2(0.05)))
 print("q2: %.2f" % (notional*q1and2(0.1)))
 
+# def q3():
+r0 = 0.05
+up = 1.1
+down = 0.9
+# q = 0.5 # assumed to be 0.5 in various parts of the code
+nperiod = 10
+r0 = 0.05
+bondprice = 100
+recrate = 0.2
+
+shortrates = latticeiterate(lambda x: fupdn(x, up, down), [r0], nperiod+1)
+a = 0.01
+b = 1.01
+hazrates =  [[a*(b**(j-i/2.0)) for j in range(i+1)] for i in range(nperiod+1)]
+pl(hazrates)
+###elemprices = latticeiterate(lambda x: felemprice(x, shortrates), [1], nperiod+1)
+defaultlat = latticeiterate(lambda x: fdefaultbond(x, shortrates, hazrate=hazrates,
+                                                   recrate=recrate),
+                            [1]*(nperiods+1), reverse=True)
+print("q3: %.2f" % (bondprice*defaultlat[0][0]))
