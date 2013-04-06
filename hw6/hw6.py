@@ -112,35 +112,40 @@ spotrates = [x/100.0 for x in spotrates]
 nperiods = len(spotrates)
 b = 0.05
 
+def bdtlattice(a, b):
+    bdt = []
+    nperiod = len(a)
+    for i in range(nperiod):
+        period = []
+        for j in range(i+1):
+            period.append(a[i]*math.exp(j*b))
+        bdt.append(period)
+    elemp = latticeiterate(lambda x: felemprice(x, bdt), [1], nperiod+1)
+    return bdt, elemp
+
 # returns objective function for a given fixed b
-def objfunc(b, nperiod):
+def objfunc(b):
     def f(a):                   # a is a vector
         # create bdt lattice
-        bdt = []
-        for i in range(len(a)):
-            period = []
-            for j in range(i+1):
-                period.append(a[i]*math.exp(j*b))
-            bdt.append(period)
-        elemp = latticeiterate(lambda x: felemprice(x, bdt), [1], nperiod+1)
+        bdt, elemp = bdtlattice(a, b)
         bondprices = [sum(period) for period in elemp]
         spotrates = [1/(bp**(1.0/(i+1)))-1 for i,bp in enumerate(bondprices[1:])]
         return spotrates      # zero-coupon bond prices
     return f
 
 a0 = [0.05]*nperiods
-of = objfunc(b, nperiods)
+of = objfunc(b)
 ans = fsolve(lambda a: [(x-y)**2 for x, y in zip(of(a), spotrates)], a0, full_output = True)
 aopt = ans[0]
 print aopt
 ofval = ans[1]['fvec']
 print sum(ofval)
-shortrates = 
+shortrates, _ = bdtlattice(aopt, b)
 
 rf = 0.039
 strike = 0
 notional = 1e6
-couponlat = [[(r - fr)/(1+r) for r in rs] for rs in shortrates]
+couponlat = [[(r - rf)/(1+r) for r in rs] for rs in shortrates]
 swaplat = latticeiterate(lambda x: frisknetprice(x, shortrates, cp=couponlat), couponlat[-1], reverse=True)
 finoptval = [max(0, x - strike) for x in swaplat[3]]
 swaptionlat = latticeiterate(lambda x: frisknetprice(x, shortrates), finoptval, reverse=True)
