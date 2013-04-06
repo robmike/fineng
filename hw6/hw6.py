@@ -5,7 +5,7 @@ from pprint import pprint
 import itertools as it
 import functools as ft
 import numpy as np
-from scipy.optimize import fsolve
+from scipy.optimize import fsolve, leastsq
 from numbers import Number
 
 import pdb, sys
@@ -151,9 +151,9 @@ def q1and2(b):
     of = objfunc(b)
     ans = fsolve(lambda a: [(x-y)**2 for x, y in zip(of(a), spotrates)], a0, full_output = True)
     aopt = ans[0]
-    print aopt
+    #print aopt
     ofval = ans[1]['fvec']
-    print sum(ofval)
+    # print sum(ofval)
     shortrates, _ = bdtlattice(aopt, b)
 
     rf = 0.039
@@ -186,7 +186,6 @@ def q3():
     a = 0.01
     b = 1.01
     hazrates =  [[a*(b**(j-i/2.0)) for j in range(i+1)] for i in range(nperiod+1)]
-    pl(hazrates)
     ###elemprices = latticeiterate(lambda x: felemprice(x, shortrates), [1], nperiod+1)
     defaultlat = latticeiterate(lambda x: fdefaultbond(x, shortrates, hazrate=hazrates,
                                                        recrate=recrate),
@@ -194,4 +193,27 @@ def q3():
     return defaultlat[0][0]
 
 print("q3: %.2f" % (bondprice*q3()))
+
+def fdb(r, c, recrate, nperiod):
+    def f(hazrate):
+        hazrate = hazrate[:nperiod]
+        survp = np.cumprod(1-hazrate)
+        defp = np.append([1], survp[:-1])*hazrate
+        ret = defp*recrate + survp*c
+        ret[-1] += survp[-1]   # Return of principle in last period
+        discount = 1/(1+r)**np.arange(1,nperiod+1)
+        return np.dot(discount, ret)
+    return f
+
+r = 0.05                        # annual interest rate (with 6 month compounding)
+recrate = [0.1, 0.25, 0.5, 0.1, 0.2]
+coupon = [0.05, 0.02, 0.05, 0.05, 0.1]
+nperiod = [2*x for x in range(1,6)]
+fs = [fdb(r/2, c, rec, nper) for c,rec,nper in zip(coupon, recrate, nperiod)]
+
+h0 = np.linspace(0.1, 0.9, nperiod[-1])
+h0 = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99])
+
+bondprices = np.array([100.92, 91.56, 105.60, 98.90, 137.48])
+# ans = leastsq(lambda hr: [f(hr) for f in fs] - bondprices, h0)
 
