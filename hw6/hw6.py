@@ -172,23 +172,26 @@ def q1and2(b):
 print("q1: %.2f" % (notional*q1and2(0.05)))
 print("q2: %.2f" % (notional*q1and2(0.1)))
 
-# def q3():
-r0 = 0.05
-up = 1.1
-down = 0.9
-# q = 0.5 # assumed to be 0.5 in various parts of the code
-nperiod = 10
-r0 = 0.05
-bondprice = 100
-recrate = 0.2
+def q3():
+    r0 = 0.05
+    up = 1.1
+    down = 0.9
+    # q = 0.5 # assumed to be 0.5 in various parts of the code
+    nperiod = 10
+    r0 = 0.05
+    bondprice = 100
+    recrate = 0.2
 
-shortrates = latticeiterate(lambda x: fupdn(x, up, down), [r0], nperiod+1)
-a = 0.01
-b = 1.01
-hazrates =  [[a*(b**(j-i/2.0)) for j in range(i+1)] for i in range(nperiod+1)]
-pl(hazrates)
-###elemprices = latticeiterate(lambda x: felemprice(x, shortrates), [1], nperiod+1)
-defaultlat = latticeiterate(lambda x: fdefaultbond(x, shortrates, hazrate=hazrates,
-                                                   recrate=recrate),
-                            [1]*(nperiods+1), reverse=True)
-print("q3: %.2f" % (bondprice*defaultlat[0][0]))
+    shortrates = latticeiterate(lambda x: fupdn(x, up, down), [r0], nperiod+1)
+    a = 0.01
+    b = 1.01
+    hazrates =  [[a*(b**(j-i/2.0)) for j in range(i+1)] for i in range(nperiod+1)]
+    pl(hazrates)
+    ###elemprices = latticeiterate(lambda x: felemprice(x, shortrates), [1], nperiod+1)
+    defaultlat = latticeiterate(lambda x: fdefaultbond(x, shortrates, hazrate=hazrates,
+                                                       recrate=recrate),
+                                [1]*(nperiods+1), reverse=True)
+    return defaultlat[0][0]
+
+print("q3: %.2f" % (bondprice*q3()))
+
