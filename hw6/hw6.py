@@ -106,12 +106,6 @@ def flatten(l):
 
 pl = print_lattice
 
-# spotrates = [7.5, 7.62, 8.1, 8.45, 9.2, 9.64, 10.12, 10.45, 10.75, 11.22, 11.55, 11.92, 12.2, 12.32]
-spotrates = [3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.55, 3.6, 3.65, 3.7]
-spotrates = [x/100.0 for x in spotrates]
-nperiods = len(spotrates)
-b = 0.05
-
 def bdtlattice(a, b):
     bdt = []
     nperiod = len(a)
@@ -133,24 +127,34 @@ def objfunc(b):
         return spotrates      # zero-coupon bond prices
     return f
 
-a0 = [0.05]*nperiods
-of = objfunc(b)
-ans = fsolve(lambda a: [(x-y)**2 for x, y in zip(of(a), spotrates)], a0, full_output = True)
-aopt = ans[0]
-print aopt
-ofval = ans[1]['fvec']
-print sum(ofval)
-shortrates, _ = bdtlattice(aopt, b)
+def q1and2(b):
+    # spotrates = [7.5, 7.62, 8.1, 8.45, 9.2, 9.64, 10.12, 10.45, 10.75, 11.22, 11.55, 11.92, 12.2, 12.32]
+    spotrates = [3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.55, 3.6, 3.65, 3.7]
+    spotrates = [x/100.0 for x in spotrates]
+    nperiods = len(spotrates)
 
-rf = 0.039
-strike = 0
-notional = 1e6
-couponlat = [[(r - rf)/(1+r) for r in rs] for rs in shortrates]
-swaplat = latticeiterate(lambda x: frisknetprice(x, shortrates, cp=couponlat), couponlat[-1], reverse=True)
-finoptval = [max(0, x - strike) for x in swaplat[3]]
-swaptionlat = latticeiterate(lambda x: frisknetprice(x, shortrates), finoptval, reverse=True)
-# pl(shortrates)
-# pl(couponlat)
-# pl(fwdswaplat)
-# pl(swaptionlat)
-print("%.2f" % (notional*swaptionlat[0][0]))
+    a0 = [0.05]*nperiods
+    of = objfunc(b)
+    ans = fsolve(lambda a: [(x-y)**2 for x, y in zip(of(a), spotrates)], a0, full_output = True)
+    aopt = ans[0]
+    print aopt
+    ofval = ans[1]['fvec']
+    print sum(ofval)
+    shortrates, _ = bdtlattice(aopt, b)
+
+    rf = 0.039
+    strike = 0
+    notional = 1e6
+    couponlat = [[(r - rf)/(1+r) for r in rs] for rs in shortrates]
+    swaplat = latticeiterate(lambda x: frisknetprice(x, shortrates, cp=couponlat), couponlat[-1], reverse=True)
+    finoptval = [max(0, x - strike) for x in swaplat[3]]
+    swaptionlat = latticeiterate(lambda x: frisknetprice(x, shortrates), finoptval, reverse=True)
+    # pl(shortrates)
+    # pl(couponlat)
+    # pl(fwdswaplat)
+    # pl(swaptionlat)
+    return swaptionlat[0][0]
+
+print("q1: %.2f" % (notional*q1and2(0.05)))
+print("q2: %.2f" % (notional*q1and2(0.1)))
+
