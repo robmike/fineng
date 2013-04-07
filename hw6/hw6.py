@@ -5,7 +5,7 @@ from pprint import pprint
 import itertools as it
 import functools as ft
 import numpy as np
-from scipy.optimize import fsolve, leastsq
+from scipy.optimize import fsolve, leastsq, fmin, fmin_cobyla
 from numbers import Number
 
 import pdb, sys
@@ -213,7 +213,18 @@ fs = [fdb(r/2, c, rec, nper) for c,rec,nper in zip(coupon, recrate, nperiod)]
 
 h0 = np.linspace(0.1, 0.9, nperiod[-1])
 h0 = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99])
+h0 = 0.05*np.ones((nperiod[-1]+1,))
 
-bondprices = np.array([100.92, 91.56, 105.60, 98.90, 137.48])
-# ans = leastsq(lambda hr: [f(hr) for f in fs] - bondprices, h0)
+bondprices = np.array([100.92, 91.56, 105.60, 98.90, 137.48])/100
 
+def nonneg(h):
+    h = copy.deepcopy(h)
+    h[h > 0] = 0
+    return np.sum(h)
+
+def monotonic(h):
+    x = h[1:] - h[:-1]
+    x[x > 0] = 0
+    return np.sum(x)
+
+ans = fmin_cobyla(lambda hr: np.sum(([f(hr) for f in fs] - bondprices)**2), h0, [nonneg, monotonic])
