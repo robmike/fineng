@@ -232,3 +232,29 @@ def q4():
     return hopt
 
 print("q4: %.2f" % (100*q4()[0]))
+
+def q5():
+    nperiod = 5*4                   # 5 year, quarterly CDS payments
+    delta = 0.25
+    recrate = 0.25                  # per annum
+    hazrate = 0.01                  # 3-month hazard rate
+    r = 0.05/4                      # per period
+    notional = 10e6
+
+    # Example from lecture, spread is 221.11 bps
+    # nperiod = 2*4                   # 2 year, quarterly CDS payments
+    # delta = 0.25
+    # recrate = 0.45                  # per annum
+    # hazrate = 0.01                  # 3-month hazard rate
+    # r = 0.01/4                      # per period
+    # notional = 1e6
+
+
+    survp = (1-hazrate)**np.arange(0, nperiod+1)
+    discount = 1/(1+r)**np.arange(1, nperiod+1)
+
+    # cds par spread
+    spread = (recrate - 1)*np.sum(np.diff(survp)*discount)/(0.5*delta*np.sum((survp[1:] + survp[:-1])*discount))
+    print (1-recrate)*hazrate/(1-hazrate/2)*(100*100) # in bps  # why doesn't this approximation work?
+    return spread
+print("q5: %.2f bps" % (100*100*q5()))
