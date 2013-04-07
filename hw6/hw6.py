@@ -205,26 +205,30 @@ def fdb(r, c, recrate, nperiod):
         return np.dot(discount, ret)
     return f
 
-r = 0.05                        # annual interest rate (with 6 month compounding)
-recrate = [0.1, 0.25, 0.5, 0.1, 0.2]
-coupon = [0.05, 0.02, 0.05, 0.05, 0.1]
-nperiod = [2*x for x in range(1,6)]
-fs = [fdb(r/2, c, rec, nper) for c,rec,nper in zip(coupon, recrate, nperiod)]
+def q4():
+    r = 0.05                        # annual interest rate (with 6 month compounding)
+    recrate = [0.1, 0.25, 0.5, 0.1, 0.2]
+    coupon = [0.05, 0.02, 0.05, 0.05, 0.1]
+    nperiod = [2*x for x in range(1,6)]
+    fs = [fdb(r/2, c, rec, nper) for c,rec,nper in zip(coupon, recrate, nperiod)]
 
-h0 = np.linspace(0.1, 0.9, nperiod[-1])
-h0 = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99])
-h0 = 0.05*np.ones((nperiod[-1]+1,))
+    h0 = np.linspace(0.1, 0.9, nperiod[-1])
+    h0 = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99])
+    h0 = 0.05*np.ones((nperiod[-1]+1,))
 
-bondprices = np.array([100.92, 91.56, 105.60, 98.90, 137.48])/100
+    bondprices = np.array([100.92, 91.56, 105.60, 98.90, 137.48])/100
 
-def nonneg(h):
-    h = copy.deepcopy(h)
-    h[h > 0] = 0
-    return np.sum(h)
+    def nonneg(h):
+        h = copy.deepcopy(h)
+        h[h > 0] = 0
+        return np.sum(h)
 
-def monotonic(h):
-    x = h[1:] - h[:-1]
-    x[x > 0] = 0
-    return np.sum(x)
+    def monotonic(h):
+        x = h[1:] - h[:-1]
+        x[x > 0] = 0
+        return np.sum(x)
 
-ans = fmin_cobyla(lambda hr: np.sum(([f(hr) for f in fs] - bondprices)**2), h0, [nonneg, monotonic])
+    hopt = fmin_cobyla(lambda hr: np.sum(([f(hr) for f in fs] - bondprices)**2), h0, [nonneg, monotonic], disp=0)
+    return hopt
+
+print("q4: %.2f" % (100*q4()[0]))
