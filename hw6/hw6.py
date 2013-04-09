@@ -169,8 +169,8 @@ def q1and2(b):
     # pl(swaptionlat)
     return swaptionlat[0][0]
 
-print("q1: %.2f" % (notional*q1and2(0.05)))
-print("q2: %.2f" % (notional*q1and2(0.1)))
+print("q1: %.2f" % (1e6*q1and2(0.05)))
+print("q2: %.2f" % (1e6*q1and2(0.1)))
 
 def q3():
     r0 = 0.05
@@ -189,9 +189,10 @@ def q3():
     ###elemprices = latticeiterate(lambda x: felemprice(x, shortrates), [1], nperiod+1)
     defaultlat = latticeiterate(lambda x: fdefaultbond(x, shortrates, hazrate=hazrates,
                                                        recrate=recrate),
-                                [1]*(nperiods+1), reverse=True)
+                                [1]*(nperiod+1), reverse=True)
     return defaultlat[0][0]
 
+bondprice = 100
 print("q3: %.2f" % (bondprice*q3()))
 
 def fdb(r, c, recrate, nperiod):
@@ -255,6 +256,6 @@ def q5():
 
     # cds par spread
     spread = (recrate - 1)*np.sum(np.diff(survp)*discount)/(0.5*delta*np.sum((survp[1:] + survp[:-1])*discount))
-    print (1-recrate)*hazrate/(1-hazrate/2)*(100*100) # in bps  # why doesn't this approximation work?
+    print (100*100)*4*(1-recrate)*hazrate/(1-hazrate/2) # in bps  # why doesn't this approximation work?
     return spread
 print("q5: %.2f bps" % (100*100*q5()))
