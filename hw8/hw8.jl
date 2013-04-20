@@ -57,12 +57,20 @@ strike = 50;
 vol = 0.3;
 
 sp = read_table("pset8.csv");            # simulated estimates of stock prices
+df = read_table("pset8-1.csv");            # actual stock holdings and prices
+clean_colnames!(df)
+
 ## volatility
 x1 = sp[:,2];
 realized_vol = round(100*logretvol(x1, T, N),2)
 
-df = read_table("pset8-1.csv");            # actual stock holdings and prices
-clean_colnames!(df)
-
 prices = df["Stock_Price"]
 pandl = simulatehedging(prices, N, T, strike, ncontracts, rfr, vol)
+
+for i=1:4
+    realized_prices = sp[:, 1+i]
+    realized_vol = 100*logretvol(realized_prices, T, N)
+    pandl = pandl = simulatehedging(realized_prices, N, T, strike, ncontracts, rfr, vol)
+    println()
+    @printf("%i: vol = %.2f%%, p&l = %.2f\n", i, realized_vol, pandl)
+end
