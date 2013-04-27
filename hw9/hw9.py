@@ -17,3 +17,25 @@ for pdefi in pdefault:
     # pdb.set_trace()
 
 print("%.3f" % ploss[3])
+
+# expected number of losses
+exploss = np.sum(ploss*np.arange(0,len(ploss)))
+print("expected num losses: %.2f" % exploss)
+
+# Variance
+print("var: %.2f" % np.sum(ploss*(np.arange(0,len(ploss)) - exploss)**2))
+
+# expected 0-2 tranche losses
+trloss = 2*(1 - ploss[0] - ploss[1]) # 2 or more losses cases
+trloss += 1*ploss[1]
+print('0-2 tranche loss: %.2f' % trloss)
+
+# range end points are inclusive
+def exp_tranche_loss(beg, end):
+    n = end - beg + 1
+    trloss2 = n*(1 - np.sum(ploss[:end])) # 4 or more losses cases
+    trloss2 += sum((np.arange(1,n))*ploss[beg:end])
+    return trloss2
+
+print("3-4 tranche loss: %.2f" % exp_tranche_loss(3,4))
+print("5-20 tranche loss: %.2f" % exp_tranche_loss(5,20))
